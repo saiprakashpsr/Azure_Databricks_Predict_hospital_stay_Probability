@@ -1,0 +1,12 @@
+1. Data Transformation (PySpark SQL)
+    •	pyspark.sql.functions: Used for all logic-based transformations, such as col, when, datediff, and expr. 
+    •	QUALIFY & row_number(): A critical combination used to filter the dataset to ensure only the most recent medical encounter is considered for each patient. 
+    •	rand(): Utilized for the downsampling logic to balance the dataset by randomly selecting a subset of the majority class. 
+2. Machine Learning (PySpark ML)
+    •	StringIndexer: Converts categorical string columns (like provider_speciality) into numerical indices that the model can interpret. 
+    •	VectorAssembler: A transformer that combines a list of columns (features) into a single vector column. 
+    •	RandomForestClassifier: The primary algorithm used for predicting whether a patient stay will exceed 10 days. 
+    •	BinaryClassificationEvaluator: Used to calculate the Area Under the ROC (AUC), which measured at approximately 0.9557 for this model. 
+3. Experiment Tracking (MLflow)
+    •	mlflow.spark.autolog(): Automatically captures model parameters, metrics, and artifacts without manual logging code. 
+    •	mlflow.start_run(): Initiates a tracking session to group the parameters (like numTrees or maxDepth) with the specific model version. 
