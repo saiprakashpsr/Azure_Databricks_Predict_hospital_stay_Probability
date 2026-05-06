@@ -1,0 +1,136 @@
+{
+    "name": "pl_synthea_bronze_Model",
+    "properties": {
+        "activities": [
+            {
+                "name": "ingest_synthea_adls",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                            "type": "HttpReadSettings",
+                            "requestMethod": "GET"
+                        },
+                        "formatSettings": {
+                            "type": "BinaryReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings",
+                            "copyBehavior": "FlattenHierarchy"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_HTTP_Zip_Source",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_ADLS_Zip_Staging",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "unzip_synthea_bronze_staging",
+                "type": "Copy",
+                "dependsOn": [
+                    {
+                        "activity": "ingest_synthea_adls",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true
+                        },
+                        "formatSettings": {
+                            "type": "BinaryReadSettings",
+                            "compressionProperties": {
+                                "type": "ZipDeflateReadSettings"
+                            }
+                        }
+                    },
+                    "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_ADLS_Zip_Source_For_Unzip",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_sink_bronze_unzipped",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "ML Model ETL",
+                "type": "DatabricksJob",
+                "dependsOn": [
+                    {
+                        "activity": "unzip_synthea_bronze_staging",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "jobId": "1078819351836328"
+                },
+                "linkedServiceName": {
+                    "referenceName": "AzureDatabricks1",
+                    "type": "LinkedServiceReference"
+                }
+            }
+        ],
+        "annotations": [],
+        "lastPublishTime": "2026-05-06T00:56:32Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}
